@@ -1,0 +1,230 @@
+version: 1
+
+naming:
+  concepts_snake_case: true
+  metric_id_kebab_case: true
+
+defaults:
+  selection:
+    max_records: 100
+    sort: createddate_desc
+    filters: {}
+
+metrics:
+  - id: sql-count
+    name: SQL Count
+    description: Number of deals that meet SoftCo SQL definition in the time window.
+    formula: >
+      count(deals where
+        Stage = "2-sales lead (Sales Pipeline)"
+        AND DealType != "Existing Customer"
+        AND DealType is not empty
+        AND OriginalSourceSoftco is known)
+    required_concepts:
+      - Stage
+      - SQLDate
+      - DealType
+      - OriginalSourceSoftco
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - OriginalSourceSoftco
+      - Pipeline
+      - OwnerId
+    record_selection:
+      date_field: SQLDate
+      max_records: 100
+      sort: SQLDate_desc
+      filters:
+        Stage_in:
+          - "2-sales lead (Sales Pipeline)"
+        DealType_exclude:
+          - "Existing Customer"
+          - ""
+        OriginalSourceSoftco_is_known: true
+
+  - id: sql-by-source
+    name: SQLs by Source
+    description: SQL count grouped by SoftCo original source/channel.
+    formula: "sql-count grouped by OriginalSourceSoftco"
+    required_concepts:
+      - Stage
+      - SQLDate
+      - DealType
+      - OriginalSourceSoftco
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - OriginalSourceSoftco
+    record_selection:
+      date_field: SQLDate
+      max_records: 100
+      sort: SQLDate_desc
+      filters:
+        Stage_in:
+          - "2-sales lead (Sales Pipeline)"
+        DealType_exclude:
+          - "Existing Customer"
+          - ""
+        OriginalSourceSoftco_is_known: true
+
+  - id: pipeline-opportunity-count
+    name: Pipeline Opportunity Count
+    description: SoftCo-defined pipeline opportunities.
+    formula: >
+      count(deals where
+        Stage in 3-9 Sales Pipeline stages
+        AND ARRCompanyCurrency != 0
+        AND ARRCompanyCurrency is known
+        AND DealType != "Existing Customer")
+    required_concepts:
+      - Stage
+      - QualifiedDate
+      - ARRCompanyCurrency
+      - DealType
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - Stage
+      - OwnerId
+    record_selection:
+      date_field: QualifiedDate
+      max_records: 100
+      sort: QualifiedDate_desc
+      filters:
+        Stage_in:
+          - "3-qualified (Sales Pipeline)"
+          - "4-demo (Sales Pipeline)"
+          - "5-in-context demo (Sales Pipeline)"
+          - "6-Quotation (Sales Pipeline)"
+          - "7-Negotiation (Sales Pipeline)"
+          - "8-Provisional Approval (Sales Pipeline)"
+          - "9-Awaiting Order (Sales Pipeline)"
+        ARRCompanyCurrency_not_zero: true
+        ARRCompanyCurrency_is_known: true
+        DealType_exclude:
+          - "Existing Customer"
+
+  - id: pipeline-value
+    name: Pipeline Value (ARR, company currency)
+    description: Sum of ARR in company currency for SoftCo pipeline opportunities.
+    formula: >
+      sum(ARRCompanyCurrency) where
+        Stage in 3-9 Sales Pipeline stages
+        AND ARRCompanyCurrency != 0
+        AND ARRCompanyCurrency is known
+        AND DealType != "Existing Customer"
+    required_concepts:
+      - Stage
+      - QualifiedDate
+      - ARRCompanyCurrency
+      - DealType
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - Stage
+      - OwnerId
+    record_selection:
+      date_field: QualifiedDate
+      max_records: 100
+      sort: QualifiedDate_desc
+      filters:
+        Stage_in:
+          - "3-qualified (Sales Pipeline)"
+          - "4-demo (Sales Pipeline)"
+          - "5-in-context demo (Sales Pipeline)"
+          - "6-Quotation (Sales Pipeline)"
+          - "7-Negotiation (Sales Pipeline)"
+          - "8-Provisional Approval (Sales Pipeline)"
+          - "9-Awaiting Order (Sales Pipeline)"
+        ARRCompanyCurrency_not_zero: true
+        ARRCompanyCurrency_is_known: true
+        DealType_exclude:
+          - "Existing Customer"
+
+  - id: open-deal-count
+    name: Open Deal Count
+    description: Number of open deals.
+    formula: "count(deals where IsWon=false AND IsLost=false)"
+    required_concepts:
+      - Stage
+      - IsWon
+      - IsLost
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - Stage
+      - OwnerId
+    record_selection:
+      date_field: CreatedDate
+      max_records: 100
+      sort: CreatedDate_desc
+      filters: {}
+
+  - id: win-rate
+    name: Win Rate
+    description: Won deals divided by (Won + Lost).
+    formula: "count(IsWon=true) / (count(IsWon=true) + count(IsLost=true))"
+    required_concepts:
+      - IsWon
+      - IsLost
+      - CloseDate
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - OwnerId
+    record_selection:
+      date_field: CloseDate
+      max_records: 100
+      sort: CloseDate_desc
+      filters: {}
+
+  - id: average-deal-size
+    name: Average Deal Size (Won)
+    description: Average ARRCompanyCurrency for won deals.
+    formula: "sum(ARRCompanyCurrency where IsWon=true) / count(IsWon=true)"
+    required_concepts:
+      - ARRCompanyCurrency
+      - IsWon
+      - CloseDate
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - OwnerId
+    record_selection:
+      date_field: CloseDate
+      max_records: 100
+      sort: CloseDate_desc
+      filters: {}
+
+  - id: sales-cycle-days
+    name: Average Sales Cycle (days)
+    description: Avg days from CreatedDate to CloseDate for won deals.
+    formula: "avg(days_between(CreatedDate, CloseDate) where IsWon=true)"
+    required_concepts:
+      - CreatedDate
+      - CloseDate
+      - IsWon
+    optional_concepts:
+      - Pipeline
+      - OwnerId
+    group_by_support:
+      - Pipeline
+      - OwnerId
+    record_selection:
+      date_field: CloseDate
+      max_records: 100
+      sort: CloseDate_desc
+      filters: {}

@@ -1,0 +1,64 @@
+{
+  "concepts": {
+    "Stage": {
+      "hubspot_property": "dealstage",
+      "type": "enum"
+    },
+    "SQLDate": {
+      "hubspot_property": "hs_v2_date_entered_21ec6f05_d0aa_479d_be3a_3495e692dc66_576466139",
+      "type": "datetime"
+    },
+    "QualifiedDate": {
+      "hubspot_property": "hs_v2_date_entered_6ddfc28d_b182_41d8_834a_55bb970c9da3_270161087",
+      "type": "datetime"
+    },
+    "ARRCompanyCurrency": {
+      "hubspot_property": "arr_in_company_currency",
+      "type": "number"
+    },
+    "AmountCompanyCurrency": {
+      "hubspot_property": "amount_in_home_currency",
+      "type": "number"
+    },
+    "Amount": {
+      "hubspot_property": "amount",
+      "type": "number"
+    },
+    "DealType": {
+      "hubspot_property": "dealtype",
+      "type": "enum"
+    },
+    "OriginalSourceSoftco": {
+      "hubspot_property": "original_source_softco_",
+      "type": "enum"
+    },
+    "SecondarySourceSoftco": {
+      "hubspot_property": "secondary_source__softco_",
+      "type": "enum"
+    },
+    "CreatedDate": {
+      "hubspot_property": "createdate",
+      "type": "datetime"
+    },
+    "CloseDate": {
+      "hubspot_property": "closedate",
+      "type": "datetime"
+    },
+    "Pipeline": {
+      "hubspot_property": "pipeline",
+      "type": "enum"
+    },
+    "OwnerId": {
+      "hubspot_property": "hubspot_owner_id",
+      "type": "enum"
+    },
+    "IsWon": {
+      "hubspot_property": "hs_is_closed_won",
+      "type": "bool"
+    },
+    "IsLost": {
+      "hubspot_property": "hs_is_closed_lost",
+      "type": "bool"
+    }
+  }
+}
